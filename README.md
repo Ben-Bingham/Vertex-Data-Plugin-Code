@@ -21,4 +21,4 @@ then update mime-type database with the command: `update-mime-database /usr/shar
 
 7. Add the dependencies folder to `$LD_LIBRARY_PATH` with the command: `export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$(pwd)/dependencies` (assumes you run the command from the directory containing dependencies)
 
-8. Finaly, rebuild Okular.
+8. Finaly, rebuild Okular, and run using the provided sample file.
