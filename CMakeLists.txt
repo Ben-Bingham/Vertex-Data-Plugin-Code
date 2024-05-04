@@ -6,7 +6,7 @@ set(okularGenerator_vertex_data_SRCS vertex_data_generator.cpp)
 
 okular_add_generator(okularGenerator_vertex_data ${okularGenerator_vertex_data_SRCS})
 
-target_link_libraries(okularGenerator_vertex_data okularcore Qt6::Core KF6::I18n GLEW glfw)
+target_link_libraries(okularGenerator_vertex_data okularcore Qt5::Core KF5::I18n GLEW glfw GL)
 
 #list( APPEND CMAKE_INSTALL_RPATH "/usr/lib/dependencies" )
 set_target_properties(okularGenerator_vertex_data

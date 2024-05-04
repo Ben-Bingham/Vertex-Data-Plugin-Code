@@ -18,6 +18,7 @@
 #include <core/utils.h>
 #include <vector>
 #include <fstream>
+#include <cstring>
 
 #include <core/textdocumentgenerator.h>
 #include <core/textdocumentgenerator_p.h>
@@ -133,7 +134,7 @@ bool VertexDataGenerator::loadDocument(const QString &fileName, QVector<Okular::
     Okular::Page* page = new Okular::Page(0, 850, 1100, Okular::Rotation0);
 
     Okular::TextPage* txtPage = new Okular::TextPage{};
-    txtPage->append(QString::fromStdString(content), Okular::NormalizedRect( QRect(0.0, 0.2, 0.2, 0.2), 0.2, 0.2 ));
+    txtPage->append(QString::fromStdString(content), new Okular::NormalizedRect( QRect(0.0, 0.2, 0.2, 0.2), 0.2, 0.2 ));
     page->setTextPage(txtPage);
 
     pagesVector.append(page);
@@ -241,7 +242,7 @@ void VertexDataGenerator::generatePixmap(Okular::PixmapRequest* request) {
 
     QImage image{ newArray, request->width(), request->height(), QImage::Format_ARGB32 };
 
-    image.mirror(false, true);
+//    image.mirror(false, true); // TODO reimplement flipping
 
     request->page()->setPixmap(request->observer(), new QPixmap(QPixmap::fromImage(image)));
 
@@ -253,5 +254,7 @@ void VertexDataGenerator::generatePixmap(Okular::PixmapRequest* request) {
 
     signalPixmapRequestDone(request);
 }
+
+int VertexDataGenerator::m_VertexDataGeneratorCount{ 0 };
 
 #include "vertex_data_generator.moc"

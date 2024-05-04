@@ -30,7 +30,7 @@ public:
 private:
     GLFWwindow* m_Window;
 
-    static inline int m_VertexDataGeneratorCount{ 0 };
+    static int m_VertexDataGeneratorCount;
 
     unsigned int m_ShaderProgram;
 };
