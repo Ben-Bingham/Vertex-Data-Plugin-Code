@@ -9,10 +9,10 @@
 #ifndef _VERTEX_DATA_GENERATOR_TXT_H_
 #define _VERTEX_DATA_GENERATOR_TXT_H_
 
-#include <GL/glew.h>
-#include <GLFW/glfw3.h>
-
 #include <core/textdocumentgenerator.h>
+
+#include "HelloTriangleApplication.h"
+
 
 class VertexDataGenerator : public Okular::Generator {
 
@@ -28,11 +28,13 @@ public:
     bool doCloseDocument() override;
 
 private:
-    GLFWwindow* m_Window;
+    // GLFWwindow* m_Window;
+
+    HelloTriangleApplication m_App;
 
     static int m_VertexDataGeneratorCount;
 
-    unsigned int m_ShaderProgram;
+    // unsigned int m_ShaderProgram;
 };
 
 #endif

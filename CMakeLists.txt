@@ -1,12 +1,14 @@
 remove_definitions(-DTRANSLATION_DOMAIN="okular")
-add_definitions(-DTRANSLATION_DOMAIN="okular_vertex_data")
+add_definitions(-DTRANSLATION_DOMAIN="okular_vertex_data" -DGLFW_INCLUDE_VULKAN)
+
+add_compile_options(-fexceptions)
 
 ########### next target ###############
-set(okularGenerator_vertex_data_SRCS vertex_data_generator.cpp)
+set(okularGenerator_vertex_data_SRCS vertex_data_generator.cpp HelloTriangleApplication.cpp)
 
 okular_add_generator(okularGenerator_vertex_data ${okularGenerator_vertex_data_SRCS})
 
-target_link_libraries(okularGenerator_vertex_data okularcore Qt5::Core KF5::I18n GLEW glfw GL)
+target_link_libraries(okularGenerator_vertex_data okularcore Qt5::Core KF5::I18n GLEW glfw GL vulkan dl pthread X11 Xxf86vm Xrandr Xi)
 
 #list( APPEND CMAKE_INSTALL_RPATH "/usr/lib/dependencies" )
 set_target_properties(okularGenerator_vertex_data

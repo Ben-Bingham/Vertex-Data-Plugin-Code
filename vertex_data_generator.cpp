@@ -34,85 +34,90 @@ VertexDataGenerator::VertexDataGenerator(QObject *parent, const QVariantList &ar
     Q_UNUSED(args);
 
     if (m_VertexDataGeneratorCount == 0) {
-        if (!glfwInit()) {
-            std::cout << "GLFW failed to load" << std::endl;
-        }
+        // if (!glfwInit()) {
+        //     std::cout << "GLFW failed to load" << std::endl;
+        // }
 
-        glfwSetErrorCallback(error_callback);
+        // glfwSetErrorCallback(error_callback);
+
+        m_App.initWindow();                                              //======
+        m_App.initVulkan();                                              //======
     }
 
     m_VertexDataGeneratorCount++;
 
-    glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
+    // glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
 
-    m_Window = glfwCreateWindow(640, 480, "Window", NULL, NULL);
-    if (!m_Window) {
-        std::cout << "Failed to create GLFW window" << std::endl;
-    }
+    // m_Window = glfwCreateWindow(640, 480, "Window", NULL, NULL);
+    // if (!m_Window) {
+    //     std::cout << "Failed to create GLFW window" << std::endl;
+    // }
 
-    glfwMakeContextCurrent(m_Window);
+    // glfwMakeContextCurrent(m_Window);
 
-    GLenum err = glewInit();
-    if (err != GLEW_OK) {
-        std::cout << "Failed to init GLEW" << std::endl;
-    }
+    // GLenum err = glewInit();
+    // if (err != GLEW_OK) {
+    //     std::cout << "Failed to init GLEW" << std::endl;
+    // }
 
-    const char* fragmentShaderSource = "#version 330 core\n"
-        "out vec4 FragColour;\n"
-        "void main() {\n"
-        "   FragColour = vec4(1.0f, 0.0f, 0.0f, 1.0f);\n"
-        "}\n\0";
+    // const char* fragmentShaderSource = "#version 330 core\n"
+    //     "out vec4 FragColour;\n"
+    //     "void main() {\n"
+    //     "   FragColour = vec4(1.0f, 0.0f, 0.0f, 1.0f);\n"
+    //     "}\n\0";
 
-    const char* vertexShaderSource = "#version 330 core\n"
-        "layout (location = 0) in vec3 position;\n"
-        "void main() {\n"
-        "   gl_Position = vec4(position.x, position.y, position.z, 1.0f);"
-        "}\n\0";
+    // const char* vertexShaderSource = "#version 330 core\n"
+    //     "layout (location = 0) in vec3 position;\n"
+    //     "void main() {\n"
+    //     "   gl_Position = vec4(position.x, position.y, position.z, 1.0f);"
+    //     "}\n\0";
 
-    // Vertex Shader
-    unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertexShader, 1, &vertexShaderSource, nullptr);
-    glCompileShader(vertexShader);
+    // // Vertex Shader
+    // unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
+    // glShaderSource(vertexShader, 1, &vertexShaderSource, nullptr);
+    // glCompileShader(vertexShader);
 
-    int success;
-    char infoLog[512];
-    glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
-    if (!success) {
-        glGetShaderInfoLog(vertexShader, 512, nullptr, infoLog);
-        std::cout << "Vertex shader failed to compile\n" << infoLog << std::endl;
-    }
+    // int success;
+    // char infoLog[512];
+    // glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
+    // if (!success) {
+    //     glGetShaderInfoLog(vertexShader, 512, nullptr, infoLog);
+    //     std::cout << "Vertex shader failed to compile\n" << infoLog << std::endl;
+    // }
 
-    // Fragment Shader
-    unsigned int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragmentShader, 1, &fragmentShaderSource, nullptr);
-    glCompileShader(fragmentShader);
+    // // Fragment Shader
+    // unsigned int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+    // glShaderSource(fragmentShader, 1, &fragmentShaderSource, nullptr);
+    // glCompileShader(fragmentShader);
 
-    glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
-    if (!success) {
-        glGetShaderInfoLog(fragmentShader, 512, nullptr, infoLog);
-        std::cout << "Fragment shader failed to compile\n" << infoLog << std::endl;
-    }
+    // glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
+    // if (!success) {
+    //     glGetShaderInfoLog(fragmentShader, 512, nullptr, infoLog);
+    //     std::cout << "Fragment shader failed to compile\n" << infoLog << std::endl;
+    // }
 
-    // Shader Program
-    m_ShaderProgram = glCreateProgram();
-    glAttachShader(m_ShaderProgram, vertexShader);
-    glAttachShader(m_ShaderProgram, fragmentShader);
-    glLinkProgram(m_ShaderProgram);
+    // // Shader Program
+    // m_ShaderProgram = glCreateProgram();
+    // glAttachShader(m_ShaderProgram, vertexShader);
+    // glAttachShader(m_ShaderProgram, fragmentShader);
+    // glLinkProgram(m_ShaderProgram);
 
-    glGetProgramiv(m_ShaderProgram, GL_LINK_STATUS, &success);
-    if (!success) {
-        glGetProgramInfoLog(m_ShaderProgram, 512, nullptr, infoLog);
-        std::cout << "Shader Program failed to link\n" << infoLog << std::endl;
-    }
+    // glGetProgramiv(m_ShaderProgram, GL_LINK_STATUS, &success);
+    // if (!success) {
+    //     glGetProgramInfoLog(m_ShaderProgram, 512, nullptr, infoLog);
+    //     std::cout << "Shader Program failed to link\n" << infoLog << std::endl;
+    // }
 
-    glDeleteShader(vertexShader);
-    glDeleteShader(fragmentShader);
+    // glDeleteShader(vertexShader);
+    // glDeleteShader(fragmentShader);
 }
 
 VertexDataGenerator::~VertexDataGenerator() {
     if (m_VertexDataGeneratorCount == 1) {
-        glfwDestroyWindow(m_Window);
-        glfwTerminate();
+        // glfwDestroyWindow(m_Window);
+        // glfwTerminate();
+
+        m_App.cleanup();                                              //======
     }
 
     m_VertexDataGeneratorCount--;
@@ -161,98 +166,100 @@ void VertexDataGenerator::generatePixmap(Okular::PixmapRequest* request) {
         }
     }
 
-    float* vertices = new float[tokens.size()];
+    m_App.mainLoop();                                              //======
 
-    size_t i = 0;
-    for (auto t : tokens) {
-        vertices[i] = t;
-        i++;
-    }
+//     float* vertices = new float[tokens.size()];
 
-    unsigned int VAO;
-    unsigned int VBO;
+//     size_t i = 0;
+//     for (auto t : tokens) {
+//         vertices[i] = t;
+//         i++;
+//     }
 
-    glGenVertexArrays(1, &VAO);
-    glGenBuffers(1, &VBO);
+//     unsigned int VAO;
+//     unsigned int VBO;
 
-    glBindVertexArray(VAO);
+//     glGenVertexArrays(1, &VAO);
+//     glGenBuffers(1, &VBO);
 
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, tokens.size() * sizeof(float), vertices, GL_STATIC_DRAW);
+//     glBindVertexArray(VAO);
 
-    delete[] vertices;
+//     glBindBuffer(GL_ARRAY_BUFFER, VBO);
+//     glBufferData(GL_ARRAY_BUFFER, tokens.size() * sizeof(float), vertices, GL_STATIC_DRAW);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
+//     delete[] vertices;
 
-    unsigned int fbo;
-    glGenFramebuffers(1, &fbo);
-    glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+//     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+//     glEnableVertexAttribArray(0);
 
-    unsigned int texture;
-    glGenTextures(1, &texture);
-    glBindTexture(GL_TEXTURE_2D, texture);
+//     unsigned int fbo;
+//     glGenFramebuffers(1, &fbo);
+//     glBindFramebuffer(GL_FRAMEBUFFER, fbo);
 
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, request->width(), request->height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+//     unsigned int texture;
+//     glGenTextures(1, &texture);
+//     glBindTexture(GL_TEXTURE_2D, texture);
 
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+//     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, request->width(), request->height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
 
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
+//     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+//     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-        std::cout << "Framebuffer failed" << std::endl;
-    }
+//     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
 
-    glClearColor(0.0, 0.0, 1.0, 1.0);
-    glClear(GL_COLOR_BUFFER_BIT);
+//     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+//         std::cout << "Framebuffer failed" << std::endl;
+//     }
 
-    glViewport(0, 0, request->width(), request->height());
+//     glClearColor(0.0, 0.0, 1.0, 1.0);
+//     glClear(GL_COLOR_BUFFER_BIT);
 
-    glUseProgram(m_ShaderProgram);
-    glBindVertexArray(VAO);
-    glDrawArrays(GL_TRIANGLES, 0, tokens.size() / 3);
+//     glViewport(0, 0, request->width(), request->height());
 
-    const int size = request->width() * request->height() * 4;
+//     glUseProgram(m_ShaderProgram);
+//     glBindVertexArray(VAO);
+//     glDrawArrays(GL_TRIANGLES, 0, tokens.size() / 3);
 
-    unsigned int pbo;
-    glGenBuffers(1, &pbo);
-    glBindBuffer(GL_PIXEL_PACK_BUFFER, pbo);
-    glBufferData(GL_PIXEL_PACK_BUFFER, size, nullptr, GL_DYNAMIC_READ);
+//     const int size = request->width() * request->height() * 4;
 
-    glReadBuffer(GL_COLOR_ATTACHMENT0);
-    glBindBuffer(GL_PIXEL_PACK_BUFFER, pbo);
-    glReadPixels(0, 0, request->width(), request->height(), GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
-    GLubyte* array = (GLubyte*)glMapBufferRange(GL_PIXEL_PACK_BUFFER, 0, size, GL_MAP_READ_BIT);
+//     unsigned int pbo;
+//     glGenBuffers(1, &pbo);
+//     glBindBuffer(GL_PIXEL_PACK_BUFFER, pbo);
+//     glBufferData(GL_PIXEL_PACK_BUFFER, size, nullptr, GL_DYNAMIC_READ);
 
-    GLubyte* tempArray = new GLubyte[size];
-    std::memcpy(tempArray, array, size);
+//     glReadBuffer(GL_COLOR_ATTACHMENT0);
+//     glBindBuffer(GL_PIXEL_PACK_BUFFER, pbo);
+//     glReadPixels(0, 0, request->width(), request->height(), GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+//     GLubyte* array = (GLubyte*)glMapBufferRange(GL_PIXEL_PACK_BUFFER, 0, size, GL_MAP_READ_BIT);
 
-    glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
-    glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
+//     GLubyte* tempArray = new GLubyte[size];
+//     std::memcpy(tempArray, array, size);
 
-    GLubyte* newArray = new GLubyte[size];
+//     glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
+//     glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
 
-    for (size_t i = 0; i < (size_t)size; i += 4) {
-        newArray[i] = tempArray[i + 2];
-        newArray[i + 1] = tempArray[i + 1];
-        newArray[i + 2] = tempArray[i];
-        newArray[i + 3] = tempArray[i + 3];
-    }
+//     GLubyte* newArray = new GLubyte[size];
 
-    QImage image{ newArray, request->width(), request->height(), QImage::Format_ARGB32 };
+//     for (size_t i = 0; i < (size_t)size; i += 4) {
+//         newArray[i] = tempArray[i + 2];
+//         newArray[i + 1] = tempArray[i + 1];
+//         newArray[i + 2] = tempArray[i];
+//         newArray[i + 3] = tempArray[i + 3];
+//     }
 
-//    image.mirror(false, true); // TODO reimplement flipping
+//     QImage image{ newArray, request->width(), request->height(), QImage::Format_ARGB32 };
 
-    request->page()->setPixmap(request->observer(), new QPixmap(QPixmap::fromImage(image)));
+// //    image.mirror(false, true); // TODO reimplement flipping
 
-    delete[] newArray;
-    delete[] tempArray;
+//     request->page()->setPixmap(request->observer(), new QPixmap(QPixmap::fromImage(image)));
 
-    glfwSwapBuffers(m_Window);
-    glfwPollEvents();
+//     delete[] newArray;
+//     delete[] tempArray;
 
-    signalPixmapRequestDone(request);
+//     glfwSwapBuffers(m_Window);
+//     glfwPollEvents();
+
+//     signalPixmapRequestDone(request);
 }
 
 int VertexDataGenerator::m_VertexDataGeneratorCount{ 0 };
