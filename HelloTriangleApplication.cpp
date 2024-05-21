@@ -72,7 +72,7 @@ std::array<VkVertexInputAttributeDescription, 2> Vertex::getAttributeDescription
     return attributeDescriptions;
 }
 
-const std::vector<Vertex> vertices{
+const std::vector<Vertex> gVertices{
     { {  0.0f, -0.5f }, { 1.0f, 0.0f, 0.0f } },
     { {  0.5f,  0.5f }, { 0.0f, 1.0f, 0.0f } },
     { { -0.5f,  0.5f }, { 0.0f, 0.0f, 1.0f } }
@@ -83,7 +83,7 @@ const std::vector<Vertex> vertices{
 void HelloTriangleApplication::run() {
     initWindow();
     initVulkan();
-    mainLoop();
+    mainLoop(gVertices.size());
     cleanup();
 }
 
@@ -114,7 +114,7 @@ void HelloTriangleApplication::initVulkan() {
     createGraphicsPipeline();
     createFramebuffers();
     createCommandPool();
-    createVertexBuffer();
+    createVertexBuffer(gVertices);
     createCommandBuffers();
     createSyncObjects();
 }
@@ -406,7 +406,7 @@ void HelloTriangleApplication::createSwapChain() {
     createInfo.imageColorSpace = surfaceFormat.colorSpace;
     createInfo.imageExtent = extent;
     createInfo.imageArrayLayers = 1;
-    createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+    createInfo.imageUsage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT; // TODO changed from: VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT
 
     QueueFamilyIndices indicies = findQueueFamilies(m_PhysicalDevice);
     unsigned int queueFamilyIndicies[] = { indicies.graphicsFamily.value(), indicies.presentFamily.value() };
@@ -717,7 +717,7 @@ void HelloTriangleApplication::createBuffer(VkDeviceSize size, VkBufferUsageFlag
     vkBindBufferMemory(m_Device, buffer, bufferMemory, 0);
 }
 
-void HelloTriangleApplication::createVertexBuffer() {
+void HelloTriangleApplication::createVertexBuffer(std::vector<Vertex> vertices) {
     VkDeviceSize bufferSize = sizeof(vertices[0]) * vertices.size();
 
     VkBuffer stagingBuffer;
@@ -822,7 +822,7 @@ void HelloTriangleApplication::createSyncObjects() {
     }
 }
 
-void HelloTriangleApplication::recordCommandBuffer(VkCommandBuffer commandBuffer, unsigned int imageIndex) {
+void HelloTriangleApplication::recordCommandBuffer(VkCommandBuffer commandBuffer, unsigned int imageIndex, size_t verticesSize) {
     VkCommandBufferBeginInfo beginInfo{};
     beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
     beginInfo.flags = 0;
@@ -839,7 +839,7 @@ void HelloTriangleApplication::recordCommandBuffer(VkCommandBuffer commandBuffer
     renderPassInfo.renderArea.offset = { 0, 0 };
     renderPassInfo.renderArea.extent = m_SwapChainExtent;
 
-    VkClearValue clearColor = { { { 0.0f, 0.0f, 0.0f, 1.0f } } };
+    VkClearValue clearColor = { { { 0.0f, 1.0f, 0.0f, 1.0f } } };
     renderPassInfo.clearValueCount = 1;
     renderPassInfo.pClearValues = &clearColor;
 
@@ -865,7 +865,7 @@ void HelloTriangleApplication::recordCommandBuffer(VkCommandBuffer commandBuffer
     scissor.extent = m_SwapChainExtent;
     vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
-    vkCmdDraw(commandBuffer, static_cast<unsigned int>(vertices.size()), 1, 0, 0);
+    vkCmdDraw(commandBuffer, static_cast<unsigned int>(verticesSize), 1, 0, 0);
 
     vkCmdEndRenderPass(commandBuffer);
 
@@ -938,16 +938,16 @@ VkExtent2D HelloTriangleApplication::chooseSwapExtent(const VkSurfaceCapabilitie
     }
 }
 
-void HelloTriangleApplication::mainLoop() {
+void HelloTriangleApplication::mainLoop(size_t verticesSize) {
     while (!glfwWindowShouldClose(m_Window)) {
         glfwPollEvents();
-        drawFrame();
+        drawFrame(verticesSize);
     }
 
     vkDeviceWaitIdle(m_Device);
 }
 
-void HelloTriangleApplication::drawFrame() {
+void HelloTriangleApplication::drawFrame(size_t verticesSize) {
     vkWaitForFences(m_Device, 1, &m_InFlightFences[m_CurrentFrame], VK_TRUE, UINT64_MAX);
 
     unsigned int imageIndex;
@@ -963,7 +963,7 @@ void HelloTriangleApplication::drawFrame() {
     vkResetFences(m_Device, 1, &m_InFlightFences[m_CurrentFrame]);
 
     vkResetCommandBuffer(m_CommandBuffers[m_CurrentFrame], 0);
-    recordCommandBuffer(m_CommandBuffers[m_CurrentFrame], imageIndex);
+    recordCommandBuffer(m_CommandBuffers[m_CurrentFrame], imageIndex, verticesSize);
 
     VkSubmitInfo submitInfo{};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;

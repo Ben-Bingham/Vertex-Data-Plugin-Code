@@ -20,11 +20,11 @@
 extern const std::vector<const char*> validationLayers;
 extern const std::vector<const char*> deviceExtensions;
 
-#ifdef NDEBUG
-const bool enableValidationLayers = false;
-#else
+// #ifdef NDEBUG
+// const bool enableValidationLayers = false;
+// #else
 const bool enableValidationLayers = true;
-#endif
+// #endif
 
 VkResult CreateDebugUtilsMessengerEXT(
     VkInstance instance, 
@@ -44,7 +44,7 @@ struct Vertex {
     static std::array<VkVertexInputAttributeDescription, 2> getAttributeDescriptions();
 };
 
-extern const std::vector<Vertex> vertices;
+extern const std::vector<Vertex> gVertices;
 
 class HelloTriangleApplication {
 public:
@@ -115,7 +115,7 @@ public:
 
     void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
 
-    void createVertexBuffer();
+    void createVertexBuffer(std::vector<Vertex> vertices);
 
     void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
 
@@ -125,7 +125,7 @@ public:
 
     void createSyncObjects();
 
-    void recordCommandBuffer(VkCommandBuffer commandBuffer, unsigned int imageIndex);
+    void recordCommandBuffer(VkCommandBuffer commandBuffer, unsigned int imageIndex, size_t verticesSize);
 
     SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice device);
     
@@ -135,15 +135,14 @@ public:
 
     VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
 
-    void mainLoop();
+    void mainLoop(size_t verticesSize);
 
-    void drawFrame();
+    void drawFrame(size_t verticesSize);
 
     void cleanupSwapChain();
 
     void cleanup();
 
-private:
     GLFWwindow* m_Window;
 
     const unsigned int m_Wdith{ 800 };
@@ -191,6 +190,8 @@ private:
 
     VkBuffer m_VertexBuffer;
     VkDeviceMemory m_VertexBufferMemory;
+
+    bool m_Drawn{ false };
 };
 
 // int main() {
