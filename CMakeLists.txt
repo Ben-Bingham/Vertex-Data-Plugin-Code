@@ -1,10 +1,12 @@
 remove_definitions(-DTRANSLATION_DOMAIN="okular")
-add_definitions(-DTRANSLATION_DOMAIN="okular_vertex_data" -DGLFW_INCLUDE_VULKAN)
+add_definitions(-DTRANSLATION_DOMAIN="okular_vertex_data" -DGLFW_INCLUDE_VULKAN )
+
+include_directories("Headless-Vulkan-Renderer/src/" "Headless-Vulkan-Renderer/dependencies/")
 
 add_compile_options(-fexceptions)
 
 ########### next target ###############
-set(okularGenerator_vertex_data_SRCS vertex_data_generator.cpp HelloTriangleApplication.cpp)
+set(okularGenerator_vertex_data_SRCS vertex_data_generator.cpp HelloTriangleApplication.cpp Headless-Vulkan-Renderer/src/renderheadless.cpp Headless-Vulkan-Renderer/dependencies/VulkanTools.cpp)
 
 okular_add_generator(okularGenerator_vertex_data ${okularGenerator_vertex_data_SRCS})
 
