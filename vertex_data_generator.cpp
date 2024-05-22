@@ -34,8 +34,8 @@ VertexDataGenerator::VertexDataGenerator(QObject *parent, const QVariantList &ar
     Q_UNUSED(args);
 
     if (m_VertexDataGeneratorCount == 0) {
-                                    // m_App.initWindow();
-                                    // m_App.initVulkan();
+                                    m_App.initWindow();
+                                    m_App.initVulkan();
     }
 
     m_VertexDataGeneratorCount++;
@@ -43,7 +43,7 @@ VertexDataGenerator::VertexDataGenerator(QObject *parent, const QVariantList &ar
 
 VertexDataGenerator::~VertexDataGenerator() {
     if (m_VertexDataGeneratorCount == 1) {
-                                            // m_App.cleanup();
+                                            m_App.cleanup();
     }
 
     m_VertexDataGeneratorCount--;
@@ -106,13 +106,17 @@ void insertImageMemoryBarrier(
 
 void flushCommandBuffer(VkCommandBuffer commandBuffer, VkQueue queue, VkCommandPool pool, bool free, HelloTriangleApplication& m_App)
 {
+    std::cout << "============================ Starting flush ============================" << std::endl;
+    std::cout << "g.1.1" << std::endl;
     if (commandBuffer == VK_NULL_HANDLE) {
         return;
     }
+    std::cout << "g.1.2" << std::endl;
 
     if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS) {
         std::cout << "Failed to end command buffer" << std::endl;
     }
+    std::cout << "g.1.3" << std::endl;
 
     VkSubmitInfo submitInfo;
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -122,26 +126,36 @@ void flushCommandBuffer(VkCommandBuffer commandBuffer, VkQueue queue, VkCommandP
     submitInfo.pNext = nullptr;
     submitInfo.pSignalSemaphores = nullptr;
     submitInfo.signalSemaphoreCount = 0;
+    std::cout << "g.1.4" << std::endl;
+
     // Create fence to ensure that the command buffer has finished executing
     VkFenceCreateInfo fenceInfo{};
     fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
     VkFence fence;
+    std::cout << "g.1.5" << std::endl;
     if(vkCreateFence(m_App.m_Device, &fenceInfo, nullptr, &fence) != VK_SUCCESS) {
         std::cout << "Failed to create Fence" << std::endl;
     }
+    std::cout << "g.1.6" << std::endl;
 
     // Submit to the queue
     if(vkQueueSubmit(queue, 1, &submitInfo, fence) != VK_SUCCESS) {
         std::cout << "Failed to submit queue" << std::endl;
     }
+
+    std::cout << "g.1.7" << std::endl;
     // Wait for the fence to signal that command buffer has finished executing
     if (vkWaitForFences(m_App.m_Device, 1, &fence, VK_TRUE, UINT64_MAX) != VK_SUCCESS) {
         std::cout << "Couldent wait for fence" << std::endl;
     }
+    std::cout << "g.1.8" << std::endl;
     vkDestroyFence(m_App.m_Device, fence, nullptr);
+    std::cout << "g.1.9" << std::endl;
     if (free) {
         vkFreeCommandBuffers(m_App.m_Device, pool, 1, &commandBuffer);
     }
+    std::cout << "g.1.10" << std::endl;
+    std::cout << "============================ Ending flush ============================" << std::endl;
 }
 
 void VertexDataGenerator::generatePixmap(Okular::PixmapRequest* request) {
@@ -169,9 +183,9 @@ void VertexDataGenerator::generatePixmap(Okular::PixmapRequest* request) {
         freshVertices.push_back(Vertex{ { tokens[i], tokens[i + 1] }, { 1.0f, 0.0f, 0.0f } });
     }
 
-    // glfwPollEvents();
+    glfwPollEvents();
 
-                                                                                            // m_App.createVertexBuffer(freshVertices); 
+    m_App.createVertexBuffer(freshVertices); 
 
     // if (m_App.m_Drawn) { return; }
 
@@ -179,369 +193,387 @@ void VertexDataGenerator::generatePixmap(Okular::PixmapRequest* request) {
 
     std::cout << "a" << std::endl;
 
-                                                                                            // // Wait for last frame to finish rendering
-                                                                                            // vkWaitForFences(m_App.m_Device, 1, &m_App.m_InFlightFences[m_App.m_CurrentFrame], VK_TRUE, UINT64_MAX);
-                                                                                            // vkDeviceWaitIdle(m_App.m_Device);
+    // Wait for last frame to finish rendering
+    vkWaitForFences(m_App.m_Device, 1, &m_App.m_InFlightFences[m_App.m_CurrentFrame], VK_TRUE, UINT64_MAX);
+    vkDeviceWaitIdle(m_App.m_Device);
 
-                                                                                            // unsigned int imageIndex;
-                                                                                            // VkResult result = vkAcquireNextImageKHR(m_App.m_Device, m_App.m_SwapChain, UINT64_MAX, m_App.m_ImageAvailableSemaphores[m_App.m_CurrentFrame], VK_NULL_HANDLE, &imageIndex);
+    unsigned int imageIndex;
+    VkResult result = vkAcquireNextImageKHR(m_App.m_Device, m_App.m_SwapChain, UINT64_MAX, m_App.m_ImageAvailableSemaphores[m_App.m_CurrentFrame], VK_NULL_HANDLE, &imageIndex);
 
-                                                                                            // if (result == VK_ERROR_OUT_OF_DATE_KHR) {
-                                                                                            //     m_App.recreateSwapChain();
-                                                                                            //     return;
-                                                                                            // } else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
-                                                                                            //     throw std::runtime_error("Failed to acquire swap chain image");
-                                                                                            // }
+    if (result == VK_ERROR_OUT_OF_DATE_KHR) {
+        m_App.recreateSwapChain();
+        return;
+    } else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
+        throw std::runtime_error("Failed to acquire swap chain image");
+    }
 
-                                                                                            // vkResetFences(m_App.m_Device, 1, &m_App.m_InFlightFences[m_App.m_CurrentFrame]);
+    vkResetFences(m_App.m_Device, 1, &m_App.m_InFlightFences[m_App.m_CurrentFrame]);
 
-                                                                                            // vkResetCommandBuffer(m_App.m_CommandBuffers[m_App.m_CurrentFrame], 0);
-                                                                                            // m_App.recordCommandBuffer(m_App.m_CommandBuffers[m_App.m_CurrentFrame], imageIndex, freshVertices.size());
+    vkResetCommandBuffer(m_App.m_CommandBuffers[m_App.m_CurrentFrame], 0);
+    m_App.recordCommandBuffer(m_App.m_CommandBuffers[m_App.m_CurrentFrame], imageIndex, freshVertices.size());
 
-                                                                                            // VkSubmitInfo submitInfo{};
-                                                                                            // submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-                                                                                            // submitInfo.pNext = nullptr;
+    VkSubmitInfo submitInfo{};
+    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    submitInfo.pNext = nullptr;
 
-                                                                                            // // The command buffer will not be submitted until the semaphore is signled
-                                                                                            // VkSemaphore waitSemaphores[] = { m_App.m_ImageAvailableSemaphores[m_App.m_CurrentFrame] };
-                                                                                            // VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
-                                                                                            // submitInfo.waitSemaphoreCount = 1;
-                                                                                            // submitInfo.pWaitSemaphores = waitSemaphores;
-                                                                                            // submitInfo.pWaitDstStageMask = waitStages;
-                                                                                            // submitInfo.commandBufferCount = 1;
-                                                                                            // submitInfo.pCommandBuffers = &m_App.m_CommandBuffers[m_App.m_CurrentFrame];
+    // The command buffer will not be submitted until the semaphore is signled
+    VkSemaphore waitSemaphores[] = { m_App.m_ImageAvailableSemaphores[m_App.m_CurrentFrame] };
+    VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
+    submitInfo.waitSemaphoreCount = 1;
+    submitInfo.pWaitSemaphores = waitSemaphores;
+    submitInfo.pWaitDstStageMask = waitStages;
+    submitInfo.commandBufferCount = 1;
+    submitInfo.pCommandBuffers = &m_App.m_CommandBuffers[m_App.m_CurrentFrame];
 
-                                                                                            // // The signaled semaphore will be signaled once the command buffer is done executing
-                                                                                            // std::cout << m_App.m_CurrentFrame << std::endl;
-                                                                                            // VkSemaphore signalSemaphores[] = { m_App.m_RenderFinishedSemaphores[m_App.m_CurrentFrame] };
-                                                                                            // submitInfo.signalSemaphoreCount = 1;
-                                                                                            // submitInfo.pSignalSemaphores = signalSemaphores;
+    // The signaled semaphore will be signaled once the command buffer is done executing
+    std::cout << m_App.m_CurrentFrame << std::endl;
+    VkSemaphore signalSemaphores[] = { m_App.m_RenderFinishedSemaphores[m_App.m_CurrentFrame] };
+    submitInfo.signalSemaphoreCount = 1;
+    submitInfo.pSignalSemaphores = signalSemaphores;
 
-                                                                                            // std::cout << "b" << std::endl;
+    std::cout << "b" << std::endl;
 
-                                                                                            // // int j = 0;
-                                                                                            // // std::cout << "m_RenderFinishedSemaphores" << std::endl;
-                                                                                            // // for (auto semaphore : m_App.m_RenderFinishedSemaphores) {
-                                                                                            // //     std::cout << "  Semaphore " << j << ": " << semaphore << std::endl;
+    // int j = 0;
+    // std::cout << "m_RenderFinishedSemaphores" << std::endl;
+    // for (auto semaphore : m_App.m_RenderFinishedSemaphores) {
+    //     std::cout << "  Semaphore " << j << ": " << semaphore << std::endl;
 
-                                                                                            // //     j++;
-                                                                                            // // }
+    //     j++;
+    // }
 
-                                                                                            // // int b = 0;
-                                                                                            // // std::cout << "m_ImageAvailableSemaphores" << std::endl;
-                                                                                            // // for (auto semaphore : m_App.m_ImageAvailableSemaphores) {
-                                                                                            // //     std::cout << "  Semaphore " << b << ": " << semaphore << std::endl;
+    // int b = 0;
+    // std::cout << "m_ImageAvailableSemaphores" << std::endl;
+    // for (auto semaphore : m_App.m_ImageAvailableSemaphores) {
+    //     std::cout << "  Semaphore " << b << ": " << semaphore << std::endl;
 
-                                                                                            // //     b++;
-                                                                                            // // }
+    //     b++;
+    // }
 
-                                                                                            // // The fence will be signaled once the command buffer is finished executing
-                                                                                            // if (vkQueueSubmit(m_App.m_GraphicsQueue, 1, &submitInfo, m_App.m_InFlightFences[m_App.m_CurrentFrame]) != VK_SUCCESS) {
-                                                                                            //     throw std::runtime_error("Failed to submit draw command buffer");
-                                                                                            //     std::cout << "Failed to submit draw command buffer ==============================" << std::endl;
-                                                                                            // }
-                                                                                            // vkQueueWaitIdle(m_App.m_GraphicsQueue);
+    // The fence will be signaled once the command buffer is finished executing
+    if (vkQueueSubmit(m_App.m_GraphicsQueue, 1, &submitInfo, m_App.m_InFlightFences[m_App.m_CurrentFrame]) != VK_SUCCESS) {
+        throw std::runtime_error("Failed to submit draw command buffer");
+        std::cout << "Failed to submit draw command buffer ==============================" << std::endl;
+    }
+    vkQueueWaitIdle(m_App.m_GraphicsQueue);
 
-                                                                                            // VkPresentInfoKHR presentInfo{};
-                                                                                            // presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-                                                                                            // presentInfo.waitSemaphoreCount = 1;
-                                                                                            // presentInfo.pWaitSemaphores = signalSemaphores; // The semaphores that will be waited on before we present
+    VkPresentInfoKHR presentInfo{};
+    presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+    presentInfo.waitSemaphoreCount = 1;
+    presentInfo.pWaitSemaphores = signalSemaphores; // The semaphores that will be waited on before we present
 
-                                                                                            // VkSwapchainKHR swapChains[] = { m_App.m_SwapChain };
-                                                                                            // presentInfo.swapchainCount = 1;
-                                                                                            // presentInfo.pSwapchains = swapChains;
-                                                                                            // presentInfo.pImageIndices = &imageIndex;
-                                                                                            // presentInfo.pResults = nullptr;
+    VkSwapchainKHR swapChains[] = { m_App.m_SwapChain };
+    presentInfo.swapchainCount = 1;
+    presentInfo.pSwapchains = swapChains;
+    presentInfo.pImageIndices = &imageIndex;
+    presentInfo.pResults = nullptr;
 
-                                                                                            // result = vkQueuePresentKHR(m_App.m_PresentQueue, &presentInfo);
+    result = vkQueuePresentKHR(m_App.m_PresentQueue, &presentInfo);
 
-                                                                                            // std::cout << "c" << std::endl;
+    std::cout << "c" << std::endl;
 
-                                                                                            // if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || m_App.m_FramebufferResized) {
-                                                                                            //     m_App.m_FramebufferResized = false;
-                                                                                            //     m_App.recreateSwapChain();
-                                                                                            // } else if (result != VK_SUCCESS) {
-                                                                                            //     throw std::runtime_error("Failed to present swap chain image");
-                                                                                            // }
+    if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || m_App.m_FramebufferResized) {
+        m_App.m_FramebufferResized = false;
+        m_App.recreateSwapChain();
+    } else if (result != VK_SUCCESS) {
+        throw std::runtime_error("Failed to present swap chain image");
+    }
 
-                                                                                            // m_App.m_CurrentFrame = (m_App.m_CurrentFrame + 1) % m_App.m_MaxFramesInFlight;
+    m_App.m_CurrentFrame = (m_App.m_CurrentFrame + 1) % m_App.m_MaxFramesInFlight;
 
     // Copying image to CPU ==========================================================================================================
 
-                                                                                                                                                                        // bool screenshotSaved = false;
-                                                                                                                                                                        // bool supportsBlit = true;
+    bool screenshotSaved = false;
+    bool supportsBlit = true;
 
-                                                                                                                                                                        // // Check blit support for source and destination
-                                                                                                                                                                        // VkFormatProperties formatProps;
+    // Check blit support for source and destination
+    VkFormatProperties formatProps;
 
-                                                                                                                                                                        // // Check if the device supports blitting from optimal images (the swapchain images are in optimal format)
-                                                                                                                                                                        // vkGetPhysicalDeviceFormatProperties(m_App.m_PhysicalDevice, VK_FORMAT_R8G8B8A8_UNORM, &formatProps); // TODO color format could be wrong
-                                                                                                                                                                        // if (!(formatProps.optimalTilingFeatures & VK_FORMAT_FEATURE_BLIT_SRC_BIT)) {
-                                                                                                                                                                        //     std::cerr << "Device does not support blitting from optimal tiled images, using copy instead of blit!" << std::endl;
-                                                                                                                                                                        //     supportsBlit = false;
-                                                                                                                                                                        // }
+    // Check if the device supports blitting from optimal images (the swapchain images are in optimal format)
+    vkGetPhysicalDeviceFormatProperties(m_App.m_PhysicalDevice, VK_FORMAT_R8G8B8A8_UNORM, &formatProps); // TODO color format could be wrong
+    if (!(formatProps.optimalTilingFeatures & VK_FORMAT_FEATURE_BLIT_SRC_BIT)) {
+        std::cerr << "Device does not support blitting from optimal tiled images, using copy instead of blit!" << std::endl;
+        supportsBlit = false;
+    }
 
-                                                                                                                                                                        // // Check if the device supports blitting to linear images
-                                                                                                                                                                        // vkGetPhysicalDeviceFormatProperties(m_App.m_PhysicalDevice, VK_FORMAT_R8G8B8A8_UNORM, &formatProps);
-                                                                                                                                                                        // if (!(formatProps.linearTilingFeatures & VK_FORMAT_FEATURE_BLIT_DST_BIT)) {
-                                                                                                                                                                        //     std::cerr << "Device does not support blitting to linear tiled images, using copy instead of blit!" << std::endl;
-                                                                                                                                                                        //     supportsBlit = false;
-                                                                                                                                                                        // }
+    // Check if the device supports blitting to linear images
+    vkGetPhysicalDeviceFormatProperties(m_App.m_PhysicalDevice, VK_FORMAT_R8G8B8A8_UNORM, &formatProps);
+    if (!(formatProps.linearTilingFeatures & VK_FORMAT_FEATURE_BLIT_DST_BIT)) {
+        std::cerr << "Device does not support blitting to linear tiled images, using copy instead of blit!" << std::endl;
+        supportsBlit = false;
+    }
 
-                                                                                                                                                                        // // Source for the copy is the last rendered swapchain image
-                                                                                                                                                                        // VkImage srcImage = m_App.m_SwapChainImages[m_App.m_CurrentFrame];
+    // Source for the copy is the last rendered swapchain image
+    VkImage srcImage = m_App.m_SwapChainImages[m_App.m_CurrentFrame];
 
-                                                                                                                                                                        // std::cout << "d" << std::endl;
+    std::cout << "d" << std::endl;
 
-                                                                                                                                                                        // // Create the linear tiled destination image to copy to and to read the memory from
-                                                                                                                                                                        // VkImageCreateInfo imageCreateCI{};
-                                                                                                                                                                        // imageCreateCI.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-                                                                                                                                                                        // imageCreateCI.imageType = VK_IMAGE_TYPE_2D;
-                                                                                                                                                                        // // Note that vkCmdBlitImage (if supported) will also do format conversions if the swapchain color format would differ
-                                                                                                                                                                        // imageCreateCI.format = VK_FORMAT_R8G8B8A8_UNORM;
-                                                                                                                                                                        // imageCreateCI.extent.width = m_App.m_SwapChainExtent.width;
-                                                                                                                                                                        // imageCreateCI.extent.height = m_App.m_SwapChainExtent.height;
-                                                                                                                                                                        // imageCreateCI.extent.depth = 1;
-                                                                                                                                                                        // imageCreateCI.arrayLayers = 1;
-                                                                                                                                                                        // imageCreateCI.mipLevels = 1;
-                                                                                                                                                                        // imageCreateCI.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-                                                                                                                                                                        // imageCreateCI.samples = VK_SAMPLE_COUNT_1_BIT;
-                                                                                                                                                                        // imageCreateCI.tiling = VK_IMAGE_TILING_LINEAR;
-                                                                                                                                                                        // imageCreateCI.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+    // Create the linear tiled destination image to copy to and to read the memory from
+    VkImageCreateInfo imageCreateCI{};
+    imageCreateCI.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+    imageCreateCI.imageType = VK_IMAGE_TYPE_2D;
+    // Note that vkCmdBlitImage (if supported) will also do format conversions if the swapchain color format would differ
+    imageCreateCI.format = VK_FORMAT_R8G8B8A8_UNORM;
+    imageCreateCI.extent.width = m_App.m_SwapChainExtent.width;
+    imageCreateCI.extent.height = m_App.m_SwapChainExtent.height;
+    imageCreateCI.extent.depth = 1;
+    imageCreateCI.arrayLayers = 1;
+    imageCreateCI.mipLevels = 1;
+    imageCreateCI.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    imageCreateCI.samples = VK_SAMPLE_COUNT_1_BIT;
+    imageCreateCI.tiling = VK_IMAGE_TILING_LINEAR;
+    imageCreateCI.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT;
 
-                                                                                                                                                                        // // Create the image
-                                                                                                                                                                        // VkImage dstImage;
-                                                                                                                                                                        // if(vkCreateImage(m_App.m_Device, &imageCreateCI, nullptr, &dstImage) != VK_SUCCESS) {
-                                                                                                                                                                        //     std::cout << "Could not create destination image" << std::endl;
-                                                                                                                                                                        // }
+    // Create the image
+    VkImage dstImage;
+    if(vkCreateImage(m_App.m_Device, &imageCreateCI, nullptr, &dstImage) != VK_SUCCESS) {
+        std::cout << "Could not create destination image" << std::endl;
+    }
 
-                                                                                                                                                                        // // Create memory to back up the image
-                                                                                                                                                                        // VkMemoryRequirements memRequirements{};
-                                                                                                                                                                        // VkMemoryAllocateInfo memAllocInfo{};
-                                                                                                                                                                        // memAllocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-                                                                                                                                                                        // VkDeviceMemory dstImageMemory;
-                                                                                                                                                                        // vkGetImageMemoryRequirements(m_App.m_Device, dstImage, &memRequirements);
-                                                                                                                                                                        // memAllocInfo.allocationSize = memRequirements.size;
-                                                                                                                                                                        // std::cout << "memRequirements.size: " << memRequirements.size << std::endl;
-                                                                                                                                                                        // // Memory must be host visible to copy from
-                                                                                                                                                                        // memAllocInfo.memoryTypeIndex = m_App.findMemoryType(memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+    // Create memory to back up the image
+    VkMemoryRequirements memRequirements{};
+    VkMemoryAllocateInfo memAllocInfo{};
+    memAllocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+    VkDeviceMemory dstImageMemory;
+    vkGetImageMemoryRequirements(m_App.m_Device, dstImage, &memRequirements);
+    memAllocInfo.allocationSize = memRequirements.size;
+    std::cout << "memRequirements.size: " << memRequirements.size << std::endl;
+    // Memory must be host visible to copy from
+    memAllocInfo.memoryTypeIndex = m_App.findMemoryType(memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
-                                                                                                                                                                        // if (vkAllocateMemory(m_App.m_Device, &memAllocInfo, nullptr, &dstImageMemory) != VK_SUCCESS) {
-                                                                                                                                                                        //     std::cout << "Failed to allocate memory" << std::endl;
-                                                                                                                                                                        // }
+    if (vkAllocateMemory(m_App.m_Device, &memAllocInfo, nullptr, &dstImageMemory) != VK_SUCCESS) {
+        std::cout << "Failed to allocate memory" << std::endl;
+    }
 
-                                                                                                                                                                        // if (vkBindImageMemory(m_App.m_Device, dstImage, dstImageMemory, 0) != VK_SUCCESS) {
-                                                                                                                                                                        //     std::cout << "Failed to bind image memory" << std::endl;
-                                                                                                                                                                        // }
+    if (vkBindImageMemory(m_App.m_Device, dstImage, dstImageMemory, 0) != VK_SUCCESS) {
+        std::cout << "Failed to bind image memory" << std::endl;
+    }
 
-                                                                                                                                                                        // std::cout << "e" << std::endl;
+    std::cout << "e" << std::endl;
 
-                                                                                                                                                                        // // Do the actual blit from the swapchain image to our host visible destination image
-                                                                                                                                                                        // VkCommandBuffer gpuToCpuCommandBuffer;
+    // Do the actual blit from the swapchain image to our host visible destination image
+    VkCommandBuffer gpuToCpuCommandBuffer;
 
-                                                                                                                                                                        // VkCommandBufferAllocateInfo commandBufferAllocInfo{};
-                                                                                                                                                                        // commandBufferAllocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-                                                                                                                                                                        // commandBufferAllocInfo.commandPool = m_App.m_CommandPool;
-                                                                                                                                                                        // commandBufferAllocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-                                                                                                                                                                        // commandBufferAllocInfo.commandBufferCount = 1;
+    VkCommandBufferAllocateInfo commandBufferAllocInfo{};
+    commandBufferAllocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+    commandBufferAllocInfo.commandPool = m_App.m_CommandPool;
+    commandBufferAllocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+    commandBufferAllocInfo.commandBufferCount = 1;
 
-                                                                                                                                                                        // if (vkAllocateCommandBuffers(m_App.m_Device, &commandBufferAllocInfo, &gpuToCpuCommandBuffer) != VK_SUCCESS) {
-                                                                                                                                                                        //     throw std::runtime_error("Failed to allocate command buffers");
-                                                                                                                                                                        // }
+    if (vkAllocateCommandBuffers(m_App.m_Device, &commandBufferAllocInfo, &gpuToCpuCommandBuffer) != VK_SUCCESS) {
+        throw std::runtime_error("Failed to allocate command buffers");
+    }
 
-                                                                                                                                                                        // VkCommandBufferBeginInfo cmdBufferInfoForScreenshot{};
-                                                                                                                                                                        // cmdBufferInfoForScreenshot.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-                                                                                                                                                                        // cmdBufferInfoForScreenshot.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+    VkCommandBufferBeginInfo cmdBufferInfoForScreenshot{};
+    cmdBufferInfoForScreenshot.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+    cmdBufferInfoForScreenshot.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
 
-                                                                                                                                                                        // if (vkBeginCommandBuffer(gpuToCpuCommandBuffer, &cmdBufferInfoForScreenshot) != VK_SUCCESS) {
-                                                                                                                                                                        //     std::cout << "Failed to start command buffer" << std::endl;
-                                                                                                                                                                        // }
+    if (vkBeginCommandBuffer(gpuToCpuCommandBuffer, &cmdBufferInfoForScreenshot) != VK_SUCCESS) {
+        std::cout << "Failed to start command buffer" << std::endl;
+    }
 
-                                                                                                                                                                        // // Transition destination image to transfer destination layout
-                                                                                                                                                                        // insertImageMemoryBarrier(
-                                                                                                                                                                        //     gpuToCpuCommandBuffer,
-                                                                                                                                                                        //     dstImage,
-                                                                                                                                                                        //     0,
-                                                                                                                                                                        //     VK_ACCESS_TRANSFER_WRITE_BIT,
-                                                                                                                                                                        //     VK_IMAGE_LAYOUT_UNDEFINED,
-                                                                                                                                                                        //     VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-                                                                                                                                                                        //     VK_PIPELINE_STAGE_TRANSFER_BIT,
-                                                                                                                                                                        //     VK_PIPELINE_STAGE_TRANSFER_BIT,
-                                                                                                                                                                        //     VkImageSubresourceRange{ VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 }
-                                                                                                                                                                        // );
+    // Transition destination image to transfer destination layout
+    insertImageMemoryBarrier(
+        gpuToCpuCommandBuffer,
+        dstImage,
+        0,
+        VK_ACCESS_TRANSFER_WRITE_BIT,
+        VK_IMAGE_LAYOUT_UNDEFINED,
+        VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+        VK_PIPELINE_STAGE_TRANSFER_BIT,
+        VK_PIPELINE_STAGE_TRANSFER_BIT,
+        VkImageSubresourceRange{ VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 }
+    );
 
-                                                                                                                                                                        // std::cout << "f" << std::endl;
+    std::cout << "f" << std::endl;
 
-                                                                                                                                                                        // // Transition swapchain image from present to transfer source layout
-                                                                                                                                                                        // insertImageMemoryBarrier(
-                                                                                                                                                                        //     gpuToCpuCommandBuffer,
-                                                                                                                                                                        //     srcImage,
-                                                                                                                                                                        //     VK_ACCESS_MEMORY_READ_BIT,
-                                                                                                                                                                        //     VK_ACCESS_TRANSFER_READ_BIT,
-                                                                                                                                                                        //     VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
-                                                                                                                                                                        //     VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-                                                                                                                                                                        //     VK_PIPELINE_STAGE_TRANSFER_BIT,
-                                                                                                                                                                        //     VK_PIPELINE_STAGE_TRANSFER_BIT,
-                                                                                                                                                                        //     VkImageSubresourceRange{ VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 }
-                                                                                                                                                                        // );
+    // Transition swapchain image from present to transfer source layout
+    insertImageMemoryBarrier(
+        gpuToCpuCommandBuffer,
+        srcImage,
+        VK_ACCESS_MEMORY_READ_BIT,
+        VK_ACCESS_TRANSFER_READ_BIT,
+        VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+        VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+        VK_PIPELINE_STAGE_TRANSFER_BIT,
+        VK_PIPELINE_STAGE_TRANSFER_BIT,
+        VkImageSubresourceRange{ VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 }
+    );
 
-                                                                                                                                                                        // // If source and destination support blit we'll blit as this also does automatic format conversion (e.g. from BGR to RGB)
-                                                                                                                                                                        // if (supportsBlit)
-                                                                                                                                                                        // {
-                                                                                                                                                                        //     // Define the region to blit (we will blit the whole swapchain image)
-                                                                                                                                                                        //     VkOffset3D blitSize;
-                                                                                                                                                                        //     blitSize.x = m_App.m_SwapChainExtent.width;
-                                                                                                                                                                        //     blitSize.y = m_App.m_SwapChainExtent.height;
-                                                                                                                                                                        //     blitSize.z = 1;
+    // If source and destination support blit we'll blit as this also does automatic format conversion (e.g. from BGR to RGB)
+    if (supportsBlit)
+    {
+        std::cout << "blit" << std::endl;
+        // Define the region to blit (we will blit the whole swapchain image)
+        VkOffset3D blitSize;
+        blitSize.x = m_App.m_SwapChainExtent.width;
+        blitSize.y = m_App.m_SwapChainExtent.height;
+        blitSize.z = 1;
 
-                                                                                                                                                                        //     VkImageBlit imageBlitRegion{};
-                                                                                                                                                                        //     imageBlitRegion.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-                                                                                                                                                                        //     imageBlitRegion.srcSubresource.layerCount = 1;
-                                                                                                                                                                        //     imageBlitRegion.srcOffsets[1] = blitSize;
-                                                                                                                                                                        //     imageBlitRegion.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-                                                                                                                                                                        //     imageBlitRegion.dstSubresource.layerCount = 1;
-                                                                                                                                                                        //     imageBlitRegion.dstOffsets[1] = blitSize;
+        VkImageBlit imageBlitRegion{};
+        imageBlitRegion.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        imageBlitRegion.srcSubresource.layerCount = 1;
+        imageBlitRegion.srcOffsets[1] = blitSize;
+        imageBlitRegion.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        imageBlitRegion.dstSubresource.layerCount = 1;
+        imageBlitRegion.dstOffsets[1] = blitSize;
 
-                                                                                                                                                                        //     // Issue the blit command
-                                                                                                                                                                        //     vkCmdBlitImage(
-                                                                                                                                                                        //         gpuToCpuCommandBuffer,
-                                                                                                                                                                        //         srcImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-                                                                                                                                                                        //         dstImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-                                                                                                                                                                        //         1,
-                                                                                                                                                                        //         &imageBlitRegion,
-                                                                                                                                                                        //         VK_FILTER_NEAREST
-                                                                                                                                                                        //     );
-                                                                                                                                                                        // }
-                                                                                                                                                                        // else
-                                                                                                                                                                        // {
-                                                                                                                                                                        //     // Otherwise use image copy (requires us to manually flip components)
-                                                                                                                                                                        //     VkImageCopy imageCopyRegion{};
-                                                                                                                                                                        //     imageCopyRegion.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-                                                                                                                                                                        //     imageCopyRegion.srcSubresource.layerCount = 1;
-                                                                                                                                                                        //     imageCopyRegion.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-                                                                                                                                                                        //     imageCopyRegion.dstSubresource.layerCount = 1;
-                                                                                                                                                                        //     imageCopyRegion.extent.width = m_App.m_SwapChainExtent.width;
-                                                                                                                                                                        //     imageCopyRegion.extent.height = m_App.m_SwapChainExtent.height;
-                                                                                                                                                                        //     imageCopyRegion.extent.depth = 1;
+        // Issue the blit command
+        vkCmdBlitImage(
+            gpuToCpuCommandBuffer,
+            srcImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+            dstImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+            1,
+            &imageBlitRegion,
+            VK_FILTER_NEAREST
+        );
+    }
+    else
+    {
+        std::cout << "copy" << std::endl;
+        // Otherwise use image copy (requires us to manually flip components)
+        VkImageCopy imageCopyRegion{};
+        imageCopyRegion.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        imageCopyRegion.srcSubresource.layerCount = 1;
+        imageCopyRegion.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        imageCopyRegion.dstSubresource.layerCount = 1;
+        imageCopyRegion.extent.width = m_App.m_SwapChainExtent.width;
+        imageCopyRegion.extent.height = m_App.m_SwapChainExtent.height;
+        imageCopyRegion.extent.depth = 1;
 
-                                                                                                                                                                        //     // Issue the copy command
-                                                                                                                                                                        //     vkCmdCopyImage(
-                                                                                                                                                                        //         gpuToCpuCommandBuffer,
-                                                                                                                                                                        //         srcImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-                                                                                                                                                                        //         dstImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-                                                                                                                                                                        //         1,
-                                                                                                                                                                        //         &imageCopyRegion
-                                                                                                                                                                        //     );
-                                                                                                                                                                        // }
+        // Issue the copy command
+        vkCmdCopyImage(
+            gpuToCpuCommandBuffer,
+            srcImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+            dstImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+            1,
+            &imageCopyRegion
+        );
+    }
 
-                                                                                                                                                                        // // Transition destination image to general layout, which is the required layout for mapping the image memory later on
-                                                                                                                                                                        // insertImageMemoryBarrier(
-                                                                                                                                                                        //     gpuToCpuCommandBuffer,
-                                                                                                                                                                        //     dstImage,
-                                                                                                                                                                        //     VK_ACCESS_TRANSFER_WRITE_BIT,
-                                                                                                                                                                        //     VK_ACCESS_MEMORY_READ_BIT,
-                                                                                                                                                                        //     VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-                                                                                                                                                                        //     VK_IMAGE_LAYOUT_GENERAL,
-                                                                                                                                                                        //     VK_PIPELINE_STAGE_TRANSFER_BIT,
-                                                                                                                                                                        //     VK_PIPELINE_STAGE_TRANSFER_BIT,
-                                                                                                                                                                        //     VkImageSubresourceRange{ VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 }
-                                                                                                                                                                        // );
+    // Transition destination image to general layout, which is the required layout for mapping the image memory later on
+    insertImageMemoryBarrier(
+        gpuToCpuCommandBuffer,
+        dstImage,
+        VK_ACCESS_TRANSFER_WRITE_BIT,
+        VK_ACCESS_MEMORY_READ_BIT,
+        VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+        VK_IMAGE_LAYOUT_GENERAL,
+        VK_PIPELINE_STAGE_TRANSFER_BIT,
+        VK_PIPELINE_STAGE_TRANSFER_BIT,
+        VkImageSubresourceRange{ VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 }
+    );
 
-                                                                                                                                                                        // std::cout << "g" << std::endl;
+    std::cout << "g" << std::endl;
 
-                                                                                                                                                                        // // Transition back the swap chain image after the blit is done
-                                                                                                                                                                        // insertImageMemoryBarrier(
-                                                                                                                                                                        //     gpuToCpuCommandBuffer,
-                                                                                                                                                                        //     srcImage,
-                                                                                                                                                                        //     VK_ACCESS_TRANSFER_READ_BIT,
-                                                                                                                                                                        //     VK_ACCESS_MEMORY_READ_BIT,
-                                                                                                                                                                        //     VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-                                                                                                                                                                        //     VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
-                                                                                                                                                                        //     VK_PIPELINE_STAGE_TRANSFER_BIT,
-                                                                                                                                                                        //     VK_PIPELINE_STAGE_TRANSFER_BIT,
-                                                                                                                                                                        //     VkImageSubresourceRange{ VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 }
-                                                                                                                                                                        // );
+    // Transition back the swap chain image after the blit is done
+    insertImageMemoryBarrier(
+        gpuToCpuCommandBuffer,
+        srcImage,
+        VK_ACCESS_TRANSFER_READ_BIT,
+        VK_ACCESS_MEMORY_READ_BIT,
+        VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+        VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+        VK_PIPELINE_STAGE_TRANSFER_BIT,
+        VK_PIPELINE_STAGE_TRANSFER_BIT,
+        VkImageSubresourceRange{ VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 }
+    );
 
-                                                                                                                                                                        // std::cout << "g.1" << std::endl;
+    vkDeviceWaitIdle(m_App.m_Device);
 
-                                                                                                                                                                        // flushCommandBuffer(gpuToCpuCommandBuffer, m_App.m_GraphicsQueue, m_App.m_CommandPool, true, m_App);
-                                                                                                                                                                        // std::cout << "g.2" << std::endl;
+    std::cout << "g.1" << std::endl;
 
-                                                                                                                                                                        // // Get layout of the image (including row pitch)
-                                                                                                                                                                        // VkImageSubresource subResource { VK_IMAGE_ASPECT_COLOR_BIT, 0, 0 };
-                                                                                                                                                                        // VkSubresourceLayout subResourceLayout;
-                                                                                                                                                                        // vkGetImageSubresourceLayout(m_App.m_Device, dstImage, &subResource, &subResourceLayout);
-                                                                                                                                                                        // std::cout << "g.3" << std::endl;
+    std::cout << "gpuToCpuCommandBuffer" << gpuToCpuCommandBuffer << std::endl;
+    std::cout << "m_App.m_CommandBuffers[m_App.m_CurrentFrame]" << m_App.m_CommandBuffers[m_App.m_CurrentFrame] << std::endl;
 
-                                                                                                                                                                        // std::cout << "About to map" << std::endl;
-                                                                                                                                                                        // // Map image memory so we can start copying from it
-                                                                                                                                                                        // const char* data;
-                                                                                                                                                                        // vkMapMemory(m_App.m_Device, dstImageMemory, 0, VK_WHOLE_SIZE, 0, (void**)&data);
-                                                                                                                                                                        // std::cout << "g.4" << std::endl;
+    std::cout << "App buffers" << std::endl;
+    int i = 0;
+    for (auto buffer : m_App.m_CommandBuffers) {
+        std::cout << "  Index: " << i << ": " << buffer << std::endl;
+        ++i;
+    }
 
-                                                                                                                                                                        // std::cout << "Just mapped" << std::endl;
-                                                                                                                                                                        // data += subResourceLayout.offset;
-                                                                                                                                                                        // std::cout << "g.5" << std::endl;
+    std::cout << "--------------------------------------\n" << std::endl;
+    std::cout << "dstImage" << dstImage << std::endl;
 
-                                                                                                                                                                        // std::cout << "===================== Printing =====================" << std::endl;
-                                                                                                                                                                        // for (int i = 0; i < 4; ++i) {
-                                                                                                                                                                        //     std::cout << (int)(char)data[i] << std::endl;
-                                                                                                                                                                        // }
-                                                                                                                                                                        // std::cout << "===================== Done Printing =====================" << std::endl;
-                                                                                                                                                                        // std::cout << "g.6" << std::endl;
+    std::cout << "srcImage" << srcImage << std::endl;
 
-                                                                                                                                                                        // std::ofstream file("testScreenshot.txt", std::ios::out);
+    flushCommandBuffer(gpuToCpuCommandBuffer, m_App.m_GraphicsQueue, m_App.m_CommandPool, true, m_App);
+    std::cout << "g.2" << std::endl;
 
-                                                                                                                                                                        // unsigned int width = m_App.m_SwapChainExtent.width;
-                                                                                                                                                                        // unsigned int height = m_App.m_SwapChainExtent.height;
+    // Get layout of the image (including row pitch)
+    VkImageSubresource subResource { VK_IMAGE_ASPECT_COLOR_BIT, 0, 0 };
+    VkSubresourceLayout subResourceLayout;
+    vkGetImageSubresourceLayout(m_App.m_Device, dstImage, &subResource, &subResourceLayout);
+    std::cout << "g.3" << std::endl;
 
-                                                                                                                                                                        // std::cout << "WIDTH: " << width << std::endl;
-                                                                                                                                                                        // std::cout << "HEIGHT: " << height << std::endl;
+    std::cout << "About to map" << std::endl;
+    // Map image memory so we can start copying from it
+    const char* data;
+    vkMapMemory(m_App.m_Device, dstImageMemory, 0, VK_WHOLE_SIZE, 0, (void**)&data);
+    std::cout << "g.4" << std::endl;
 
-                                                                                                                                                                        // // ppm header
-                                                                                                                                                                        // file << "P6\n" << m_App.m_SwapChainExtent.width << "\n" << m_App.m_SwapChainExtent.height << "\n" << 255 << "\n";
+    std::cout << "Just mapped" << std::endl;
+    data += subResourceLayout.offset;
+    std::cout << "g.5" << std::endl;
 
-                                                                                                                                                                        // // If source is BGR (destination is always RGB) and we can't use blit (which does automatic conversion), we'll have to manually swizzle color components
-                                                                                                                                                                        // bool colorSwizzle = false;
-                                                                                                                                                                        // // Check if source is BGR
-                                                                                                                                                                        // // Note: Not complete, only contains most common and basic BGR surface formats for demonstration purposes
-                                                                                                                                                                        // if (!supportsBlit)
-                                                                                                                                                                        // {
-                                                                                                                                                                        //     std::vector<VkFormat> formatsBGR = { VK_FORMAT_B8G8R8A8_SRGB, VK_FORMAT_B8G8R8A8_UNORM, VK_FORMAT_B8G8R8A8_SNORM };
-                                                                                                                                                                        //     colorSwizzle = (std::find(formatsBGR.begin(), formatsBGR.end(), VK_FORMAT_R8G8B8A8_UNORM) != formatsBGR.end());
-                                                                                                                                                                        // }
+    std::cout << "===================== Printing =====================" << std::endl;
+    for (int i = 0; i < 100; ++i) {
+        std::cout << (int)data[i] << std::endl;
+    }
+    std::cout << "===================== Done Printing =====================" << std::endl;
+    std::cout << "g.6" << std::endl;
 
-                                                                                                                                                                        // // ppm binary pixel data
-                                                                                                                                                                        // for (uint32_t y = 0; y < height; y++)
-                                                                                                                                                                        // {
-                                                                                                                                                                        //     // std::cout << "height" << std::endl;
-                                                                                                                                                                        //     unsigned int *row = (unsigned int*)data;
-                                                                                                                                                                        //     for (uint32_t x = 0; x < width; x++)
-                                                                                                                                                                        //     {
-                                                                                                                                                                        //         if (colorSwizzle)
-                                                                                                                                                                        //         {
-                                                                                                                                                                        //             file.write((char*)row+2, 1);
-                                                                                                                                                                        //             file.write((char*)row+1, 1);
-                                                                                                                                                                        //             file.write((char*)row, 1);
-                                                                                                                                                                        //         }
-                                                                                                                                                                        //         else
-                                                                                                                                                                        //         {
-                                                                                                                                                                        //             file.write((char*)row, 3);
-                                                                                                                                                                        //         }
-                                                                                                                                                                        //         row++;
-                                                                                                                                                                        //     }
-                                                                                                                                                                        //     data += subResourceLayout.rowPitch;
-                                                                                                                                                                        // }
-                                                                                                                                                                        // file.close();
+    std::ofstream file("testScreenshot.txt", std::ios::out);
 
-                                                                                                                                                                        // std::cout << "Screenshot saved to disk" << std::endl;
+    unsigned int width = m_App.m_SwapChainExtent.width;
+    unsigned int height = m_App.m_SwapChainExtent.height;
 
-                                                                                                                                                                        // //Clean up resources
+    std::cout << "WIDTH: " << width << std::endl;
+    std::cout << "HEIGHT: " << height << std::endl;
 
+    // ppm header
+    file << "P6\n" << m_App.m_SwapChainExtent.width << "\n" << m_App.m_SwapChainExtent.height << "\n" << 255 << "\n";
 
-                                                                                                                                                                        // screenshotSaved = true;
+    // If source is BGR (destination is always RGB) and we can't use blit (which does automatic conversion), we'll have to manually swizzle color components
+    bool colorSwizzle = false;
+    // Check if source is BGR
+    // Note: Not complete, only contains most common and basic BGR surface formats for demonstration purposes
+    if (!supportsBlit)
+    {
+        std::vector<VkFormat> formatsBGR = { VK_FORMAT_B8G8R8A8_SRGB, VK_FORMAT_B8G8R8A8_UNORM, VK_FORMAT_B8G8R8A8_SNORM };
+        colorSwizzle = (std::find(formatsBGR.begin(), formatsBGR.end(), VK_FORMAT_R8G8B8A8_UNORM) != formatsBGR.end());
+    }
 
-                                                                                                                                                                        // std::cout << "h" << std::endl;
+    // ppm binary pixel data
+    for (uint32_t y = 0; y < height; y++)
+    {
+        // std::cout << "height" << std::endl;
+        unsigned int *row = (unsigned int*)data;
+        for (uint32_t x = 0; x < width; x++)
+        {
+            if (colorSwizzle)
+            {
+                file.write((char*)(int*)row+2, 1);
+                file.write((char*)(int*)row+1, 1);
+                file.write((char*)(int*)row, 1);
+            }
+            else
+            {
+                file.write((char*)(int*)row, 3);
+            }
+            row++;
+        }
+        data += subResourceLayout.rowPitch;
+    }
+    file.close();
+
+    std::cout << "Screenshot saved to disk" << std::endl;
+
+    //Clean up resources
+
+    screenshotSaved = true;
+
+    std::cout << "h" << std::endl;
                                                                             // VkBuffer gpuToCpuStagingBuffer;
                                                                             // VkDeviceMemory gpuToCpuStagingBufferMemory;
 
@@ -739,11 +771,44 @@ void VertexDataGenerator::generatePixmap(Okular::PixmapRequest* request) {
     //     tempArray[i] = 0;
     // }
 
+    // for (int i = 0; i < size; i += 4) {
+    //     tempArray[i + 0] = 0;   // B
+    //     tempArray[i + 1] = 0;   // G
+    //     tempArray[i + 2] = 255; // R
+    //     tempArray[i + 3] = 255; // A
+    // }
+
+    // std::cout << "==val==" << std::endl;
+    // for (int i = 0; i < 100; ++i) {
+    //     std::cout << (int)data[i] << std::endl;
+    // }
+    // std::cout << "==Endval==" << std::endl;
+
     for (int i = 0; i < size; i += 4) {
-        tempArray[i + 0] = 0;
-        tempArray[i + 1] = 0;
-        tempArray[i + 2] = 1;
-        tempArray[i + 3] = 1;
+        // tempArray[i + 0] = data[i + 2]; // B
+        // tempArray[i + 1] = data[i + 1]; // G
+        // tempArray[i + 2] = data[i + 0]; // R
+        // tempArray[i + 3] = data[i + 3]; // A // TODO
+
+        if (((int)data[i + 2]) == -1) {
+            std::cout << "TRUE" << std::endl;
+            tempArray[i + 0] = 255;
+        }
+
+        if (((int)data[i + 1]) == -1) {
+                        std::cout << "TRUE" << std::endl;
+            tempArray[i + 1] = 255;
+        }
+
+        if (((int)data[i + 0]) == -1) {
+                        std::cout << "TRUE" << std::endl;
+            tempArray[i + 2] = 255;
+        }
+
+        if (((int)data[i + 3]) == -1) {
+                        std::cout << "TRUE" << std::endl;
+            tempArray[i + 3] = 255;
+        }
     }
 
     std::cout << "i.3" << std::endl;
@@ -772,9 +837,9 @@ void VertexDataGenerator::generatePixmap(Okular::PixmapRequest* request) {
 
     // m_App.m_Drawn = true;
 
-                                                                                                    // vkUnmapMemory(m_App.m_Device, dstImageMemory);
-                                                                                                    // vkFreeMemory(m_App.m_Device, dstImageMemory, nullptr);
-                                                                                                    // vkDestroyImage(m_App.m_Device, dstImage, nullptr);
+    vkUnmapMemory(m_App.m_Device, dstImageMemory);
+    vkFreeMemory(m_App.m_Device, dstImageMemory, nullptr);
+    vkDestroyImage(m_App.m_Device, dstImage, nullptr);
 
     std::cout << "k" << std::endl;
 }
