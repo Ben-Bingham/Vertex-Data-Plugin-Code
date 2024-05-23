@@ -192,6 +192,10 @@ void VertexDataGenerator::generatePixmap(Okular::PixmapRequest* request) {
 
         unsigned char* imageData = vulkanExample.render(&imageDataSize, request->width(), request->height());
 
+        std::cout << "Size: " << request->width() * request->height() * 4 << std::endl;
+
+        std::cout << "Ratio: " << (float)request->width() / (float)request->height() << std::endl;
+
         std::cout << "Request info: Width: " << request->width() << ", Height: " << request->height() << std::endl;
 
         std::cout << "NormalizedRect: " << std::endl;
@@ -218,6 +222,13 @@ void VertexDataGenerator::generatePixmap(Okular::PixmapRequest* request) {
         // }
 
         for (int i = 0; i < imageDataSize; i += 4) {
+            tempArray[i + 0] = 255;
+            tempArray[i + 1] = 255;
+            tempArray[i + 2] = 0;
+            tempArray[i + 3] = 255;
+        }
+
+        for (int i = 0; i < imageDataSize; i += 4) {
             tempArray[i + 0] = (GLubyte)imageData[i + 2]; // B
             tempArray[i + 1] = (GLubyte)imageData[i + 1]; // G
             tempArray[i + 2] = (GLubyte)imageData[i + 0]; // R
@@ -225,6 +236,10 @@ void VertexDataGenerator::generatePixmap(Okular::PixmapRequest* request) {
         }
 
         QImage image{ tempArray, request->width(), request->height(), QImage::Format_ARGB32 };
+
+        std::cout << "========================" << std::endl;
+        image.save("qImage.png");
+        std::cout << "========================" << std::endl;
 
         // image.mirror(false, true); // TODO reimplement flipping
 
