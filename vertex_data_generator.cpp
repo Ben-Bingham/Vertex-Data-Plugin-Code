@@ -36,8 +36,8 @@ VertexDataGenerator::VertexDataGenerator(QObject *parent, const QVariantList &ar
     Q_UNUSED(args);
 
     if (m_VertexDataGeneratorCount == 0) {
-                                    m_App.initWindow();
-                                    m_App.initVulkan();
+                                    // m_App.initWindow();
+                                    // m_App.initVulkan();
     }
 
     m_VertexDataGeneratorCount++;
@@ -45,7 +45,7 @@ VertexDataGenerator::VertexDataGenerator(QObject *parent, const QVariantList &ar
 
 VertexDataGenerator::~VertexDataGenerator() {
     if (m_VertexDataGeneratorCount == 1) {
-                                            m_App.cleanup();
+                                            // m_App.cleanup();
     }
 
     m_VertexDataGeneratorCount--;
@@ -187,9 +187,132 @@ void VertexDataGenerator::generatePixmap(Okular::PixmapRequest* request) {
 
     {
         VulkanExample vulkanExample{"/home/benjaminb/kde/src/okular/generators/Vertex-Data-Plugin-Code/Headless-Vulkan-Renderer/shaders/"};
-	    std::cout << "Finished. Press enter to terminate...";
-	    std::cin.get();
+
+        size_t imageDataSize;
+
+        unsigned char* imageData = vulkanExample.render(&imageDataSize, request->width(), request->height());
+
+        std::cout << "Request info: Width: " << request->width() << ", Height: " << request->height() << std::endl;
+
+        std::cout << "NormalizedRect: " << std::endl;
+            std::cout << "\tWidth: " << request->normalizedRect().width() << std::endl;
+            std::cout << "\tHeight: " << request->normalizedRect().height() << std::endl;
+            std::cout << "\tCenter: " << std::endl;
+                std::cout << "\t\tX: " << request->normalizedRect().center().x << std::endl;
+                std::cout << "\t\tY: " << request->normalizedRect().center().y << std::endl;
+            std::cout << "\tBottom: " << request->normalizedRect().bottom << std::endl;
+            std::cout << "\tLeft: " << request->normalizedRect().left << std::endl; 
+            std::cout << "\tRight: " << request->normalizedRect().right << std::endl; 
+            std::cout << "\tTop: " << request->normalizedRect().top << std::endl;
+
+        GLubyte* tempArray = new GLubyte[imageDataSize];
+
+        std::memcpy(tempArray, imageData, imageDataSize);
+        
+        // for (int i = 0; i < 10000; i += 4) {
+        //     std::cout << "R: " << (int)imageData[i + 0]; // R
+        //     std::cout << ", G: " << (int)imageData[i + 1]; // G
+        //     std::cout << ", B: " << (int)imageData[i + 2]; // B
+        //     std::cout << ", A: " << (int)imageData[i + 3]; // A
+        //     std::cout << std::endl;
+        // }
+
+        for (int i = 0; i < imageDataSize; i += 4) {
+            tempArray[i + 0] = (GLubyte)imageData[i + 2]; // B
+            tempArray[i + 1] = (GLubyte)imageData[i + 1]; // G
+            tempArray[i + 2] = (GLubyte)imageData[i + 0]; // R
+            tempArray[i + 3] = (GLubyte)imageData[i + 3]; // A
+        }
+
+        QImage image{ tempArray, request->width(), request->height(), QImage::Format_ARGB32 };
+
+        // image.mirror(false, true); // TODO reimplement flipping
+
+        request->page()->setPixmap(request->observer(), new QPixmap(QPixmap::fromImage(image)));
+
+        delete[] imageData;
     }
+
+    // const int requestSize = request->width() * request->height() * 4;
+
+    // // GLubyte* array = nullptr;
+
+    // GLubyte* tempArray = new GLubyte[size];
+    // std::cout << "i.2" << std::endl;
+    // // std::memcpy(tempArray, data, size);
+
+    // int n = 100;
+
+    // // for (int i = 0; i < n; ++i) {
+
+    // //     tempArray[i] = data[i];
+
+    // //     // std::cout << "Finished: " << i << std::endl;
+    // // }
+
+    // // for (int i = n; i < size; ++i) {
+    // //     tempArray[i] = 0;
+    // // }
+
+    // // for (int i = 0; i < size; i += 4) {
+    // //     tempArray[i + 0] = 0;   // B
+    // //     tempArray[i + 1] = 0;   // G
+    // //     tempArray[i + 2] = 255; // R
+    // //     tempArray[i + 3] = 255; // A
+    // // }
+
+    // // std::cout << "==val==" << std::endl;
+    // // for (int i = 0; i < 100; ++i) {
+    // //     std::cout << (int)data[i] << std::endl;
+    // // }
+    // // std::cout << "==Endval==" << std::endl;
+
+    // for (int i = 0; i < size; i += 4) {
+    //     // tempArray[i + 0] = data[i + 2]; // B
+    //     // tempArray[i + 1] = data[i + 1]; // G
+    //     // tempArray[i + 2] = data[i + 0]; // R
+    //     // tempArray[i + 3] = data[i + 3]; // A // TODO
+
+    //     if (((int)data[i + 2]) == -1) {
+    //         std::cout << "TRUE" << std::endl;
+    //         tempArray[i + 0] = 255;
+    //     }
+
+    //     if (((int)data[i + 1]) == -1) {
+    //                     std::cout << "TRUE" << std::endl;
+    //         tempArray[i + 1] = 255;
+    //     }
+
+    //     if (((int)data[i + 0]) == -1) {
+    //                     std::cout << "TRUE" << std::endl;
+    //         tempArray[i + 2] = 255;
+    //     }
+
+    //     if (((int)data[i + 3]) == -1) {
+    //                     std::cout << "TRUE" << std::endl;
+    //         tempArray[i + 3] = 255;
+    //     }
+    // }
+
+    // std::cout << "i.3" << std::endl;
+    // // GLubyte* newArray = new GLubyte[size];
+
+    // // for (size_t i = 0; i < (size_t)size; i += 4) {
+    // //     newArray[i] = tempArray[i + 2];
+    // //     newArray[i + 1] = tempArray[i + 1];
+    // //     newArray[i + 2] = tempArray[i];
+    // //     newArray[i + 3] = tempArray[i + 3];
+    // // }
+
+    // QImage image{ tempArray, request->width(), request->height(), QImage::Format_ARGB32 };
+
+    // // image.mirror(false, true); // TODO reimplement flipping
+
+    // request->page()->setPixmap(request->observer(), new QPixmap(QPixmap::fromImage(image)));
+
+    // delete[] tempArray;
+
+    signalPixmapRequestDone(request);
 
     {
     // glfwPollEvents();
