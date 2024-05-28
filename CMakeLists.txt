@@ -6,11 +6,11 @@ include_directories("Headless-Vulkan-Renderer/src/" "Headless-Vulkan-Renderer/de
 add_compile_options(-fexceptions)
 
 ########### next target ###############
-set(okularGenerator_vertex_data_SRCS vertex_data_generator.cpp HelloTriangleApplication.cpp Headless-Vulkan-Renderer/src/renderheadless.cpp Headless-Vulkan-Renderer/dependencies/VulkanTools.cpp)
+set(okularGenerator_vertex_data_SRCS vertex_data_generator.cpp Headless-Vulkan-Renderer/src/renderheadless.cpp Headless-Vulkan-Renderer/dependencies/VulkanTools.cpp)
 
 okular_add_generator(okularGenerator_vertex_data ${okularGenerator_vertex_data_SRCS})
 
-target_link_libraries(okularGenerator_vertex_data okularcore Qt5::Core KF5::I18n GLEW glfw GL vulkan dl pthread X11 Xxf86vm Xrandr Xi)
+target_link_libraries(okularGenerator_vertex_data okularcore Qt5::Core KF5::I18n vulkan)
 
 #list( APPEND CMAKE_INSTALL_RPATH "/usr/lib/dependencies" )
 set_target_properties(okularGenerator_vertex_data
