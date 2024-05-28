@@ -11,11 +11,9 @@
 
 #include <core/textdocumentgenerator.h>
 
-#include "HelloTriangleApplication.h"
-
+#include "renderheadless.h"
 
 class VertexDataGenerator : public Okular::Generator {
-
     Q_OBJECT
     Q_INTERFACES(Okular::Generator)
 
@@ -28,13 +26,9 @@ public:
     bool doCloseDocument() override;
 
 private:
-    // GLFWwindow* m_Window;
-
-    HelloTriangleApplication m_App;
-
     static int m_VertexDataGeneratorCount;
 
-    // unsigned int m_ShaderProgram;
+    HeadlessRenderer* m_HeadlessRenderer;
 };
 
 #endif

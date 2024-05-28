@@ -1,5 +1,5 @@
 remove_definitions(-DTRANSLATION_DOMAIN="okular")
-add_definitions(-DTRANSLATION_DOMAIN="okular_vertex_data" -DGLFW_INCLUDE_VULKAN )
+add_definitions(-DTRANSLATION_DOMAIN="okular_vertex_data" -DGLFW_INCLUDE_VULKAN -DVULKAN_DEBUG)
 
 include_directories("Headless-Vulkan-Renderer/src/" "Headless-Vulkan-Renderer/dependencies/")
 
