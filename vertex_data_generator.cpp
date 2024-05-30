@@ -34,7 +34,8 @@ VertexDataGenerator::VertexDataGenerator(QObject *parent, const QVariantList &ar
     Q_UNUSED(args);
     
     if (m_VertexDataGeneratorCount == 0) {
-        m_HeadlessRenderer = new HeadlessRenderer{ "/home/benjaminb/kde/src/okular/generators/Vertex-Data-Plugin-Code/Headless-Vulkan-Renderer/shaders/" };
+        // m_HeadlessRenderer = new HeadlessRenderer{ "/home/benjaminb/kde/src/okular/generators/Vertex-Data-Plugin-Code/Headless-Vulkan-Renderer/shaders/" };
+        m_HeadlessRenderer = new HeadlessRenderer{ "./" };
         // m_HeadlessRenderer->setupRenderer();
     }
 
@@ -92,8 +93,6 @@ void VertexDataGenerator::generatePixmap(Okular::PixmapRequest* request) {
             currentToken += c;
         }
     }
-
-    // VulkanExample vulkanExample{"/home/benjaminb/kde/src/okular/generators/Vertex-Data-Plugin-Code/Headless-Vulkan-Renderer/shaders/"};
 
     int width = request->width();
     int height = request->height();
